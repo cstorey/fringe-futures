@@ -5,7 +5,7 @@ extern crate log;
 
 use std::panic;
 use fringe::OsStack;
-use fringe::generator::{Generator, Yielder};
+use fringe::generator::{State, Generator, Yielder};
 use futures::{Future, Poll, Async};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -78,6 +78,10 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
 
 impl<T: Send, E: Send> Drop for FringeFut<T, E> {
     fn drop(&mut self) {
+        if let State::Unavailable = self.gen.state() {
+            return;
+        }
+
         let result =
             panic::catch_unwind(panic::AssertUnwindSafe(|| self.gen.resume(WaitCommand::Terminate)));
         match result {
