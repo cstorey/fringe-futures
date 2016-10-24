@@ -60,11 +60,11 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
 
 #[cfg(test)]
 mod test {
-    extern crate tokio_timer;
     use std::time::Duration;
     use std::mem;
     use super::FringeFut;
     use futures::{Future, Poll, Async, task};
+    use std::sync::{Arc, atomic};
     #[derive(Debug)]
     enum CanaryFuture {
         Ready(usize),
@@ -103,5 +103,10 @@ mod test {
         // Helpfully seems to run things inside of a task for us.
         let res = f.wait();
         println!("res:{:?}", res);
+    }
+
+    #[test]
+    fn should_drop_resources_on_cancel() {
+        struct MyDroppable(atomic::AtomicBool);
     }
 }

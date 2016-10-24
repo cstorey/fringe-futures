@@ -4,7 +4,6 @@ extern crate fringe_futures;
 
 use futures::{Future };
 use fringe_futures::FringeFut;
-use std::time::Duration;
 
 fn main() {
     let f = FringeFut::<usize, ()>::new(|yielder| {
