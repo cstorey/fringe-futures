@@ -9,10 +9,12 @@ use std::cell::RefCell;
 use tokio_timer::*;
 use std::time::Duration;
 
+#[derive(Debug)]
 struct FringeFut<T: Send, E: Send> {
     gen: Generator<(), Async<Result<T, E>>, OsStack>,
 }
 
+#[derive(Debug, Clone)]
 struct SchedThunk<'a, T: Send + 'a, E: Send + 'a>(&'a Yielder<(), Async<Result<T, E>>>);
 const STACKSZ: usize = 1 << 20;
 
@@ -69,11 +71,12 @@ fn main() {
         for n in 0..10 {
             let dur = Duration::from_millis(100) * n;
             println!("n:{:?}", dur);
-            yielder.await(timer.sleep(dur));
+            yielder.await(timer.sleep(dur)).expect("await");
         }
         Ok(42usize)
     });
 
+    println!("Before:{:?}", f);
     let res = f.wait();
     println!("res:{:?}", res);
 }
