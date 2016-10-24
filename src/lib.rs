@@ -1,27 +1,22 @@
 extern crate fringe;
 extern crate futures;
-extern crate tokio_timer;
 use fringe::OsStack;
 use fringe::generator::{Generator, Yielder};
 use futures::{Future, Poll, Async};
-use std::rc::Rc;
-use std::cell::RefCell;
-use tokio_timer::*;
-use std::time::Duration;
 
 #[derive(Debug)]
-struct FringeFut<T: Send, E: Send> {
+pub struct FringeFut<T: Send, E: Send> {
     gen: Generator<(), Async<Result<T, E>>, OsStack>,
 }
 
 #[derive(Debug, Clone)]
-struct SchedThunk<'a, T: Send + 'a, E: Send + 'a>(&'a Yielder<(), Async<Result<T, E>>>);
+pub struct SchedThunk<'a, T: Send + 'a, E: Send + 'a>(&'a Yielder<(), Async<Result<T, E>>>);
 const STACKSZ: usize = 1 << 20;
 
 // impl<'a, Input, Output, Stack> Generator<'a, Input, Output, Stack> where Input: 'a, Output: 'a, Stack: Stack
 // fn resume(&mut self, input: Input) -> Option<Output>
 impl<T: Send, E: Send> FringeFut<T, E> {
-    fn new<F>(f: F) -> Self
+    pub fn new<F>(f: F) -> Self
         where F: FnOnce(SchedThunk<T, E>) -> Result<T, E> + Send
     {
         let stack = OsStack::new(STACKSZ).expect("OsStack::new");
@@ -36,7 +31,7 @@ impl<T: Send, E: Send> FringeFut<T, E> {
     }
 }
 impl<'a, T: Send + 'a, E: Send + 'a> SchedThunk<'a, T, E> {
-    fn await<F: Future>(&self, mut f: F) -> Result<F::Item, F::Error> {
+    pub fn await<F: Future>(&self, mut f: F) -> Result<F::Item, F::Error> {
         loop {
             match f.poll() {
                 Ok(Async::NotReady) => self.0.suspend(Async::NotReady),
@@ -61,22 +56,4 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
             }
         }
     }
-}
-
-fn main() {
-    let timer = Timer::default();
-
-    // Execute some work on the thread pool, optionally closing over data.
-    let f = FringeFut::<usize, ()>::new(|yielder| {
-        for n in 0..10 {
-            let dur = Duration::from_millis(100) * n;
-            println!("n:{:?}", dur);
-            yielder.await(timer.sleep(dur)).expect("await");
-        }
-        Ok(42usize)
-    });
-
-    println!("Before:{:?}", f);
-    let res = f.wait();
-    println!("res:{:?}", res);
 }
