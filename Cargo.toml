@@ -1,0 +1,10 @@
+[package]
+name = "fringefibers"
+version = "0.1.0"
+authors = ["Ceri Storey <cez@necrofish.org.uk>"]
+
+[dependencies]
+fringe = { version = "1.2.1" }
+futures = "0.1.2"
+tokio-timer = { git = "https://github.com/tokio-rs/tokio-timer" }
+futures-cpupool = "0.1.1"
