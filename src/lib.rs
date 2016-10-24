@@ -20,7 +20,7 @@ impl<T: Send, E: Send> FringeFut<T, E> {
         where F: FnOnce(SchedThunk<T, E>) -> Result<T, E> + Send
     {
         let stack = OsStack::new(STACKSZ).expect("OsStack::new");
-        let mut gen = {
+        let gen = {
             Generator::new(stack, move |yielder, mut _in: ()| {
                 let wr = SchedThunk(yielder);
                 let res = f(wr);
@@ -73,7 +73,7 @@ mod test {
         let f = FringeFut::<usize, ()>::new(|yielder| {
             for n in 0..5 {
                 let dur = Duration::from_millis(200);
-                println!("n:{:?}", dur);
+                println!("n:{:?}", n);
                 yielder.await(timer.sleep(dur)).expect("await");
             }
             Ok(42usize)
