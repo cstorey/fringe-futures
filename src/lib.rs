@@ -57,3 +57,30 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    extern crate tokio_timer;
+    use self::tokio_timer::Timer;
+    use std::time::Duration;
+    use super::FringeFut;
+    use futures::Future;
+
+    #[test]
+    fn smoketest() {
+        let timer = Timer::default();
+
+        let f = FringeFut::<usize, ()>::new(|yielder| {
+            for n in 0..5 {
+                let dur = Duration::from_millis(200);
+                println!("n:{:?}", dur);
+                yielder.await(timer.sleep(dur)).expect("await");
+            }
+            Ok(42usize)
+        });
+
+        println!("Before:{:?}", f);
+        let res = f.wait();
+        println!("res:{:?}", res);
+    }
+}
