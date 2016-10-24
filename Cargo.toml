@@ -7,4 +7,3 @@ authors = ["Ceri Storey <cez@necrofish.org.uk>"]
 fringe = { version = "1.2.1" }
 futures = "0.1.2"
 tokio-timer = { git = "https://github.com/tokio-rs/tokio-timer" }
-futures-cpupool = "0.1.1"

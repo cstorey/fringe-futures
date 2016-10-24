@@ -1,7 +1,6 @@
 extern crate fringe;
 extern crate futures;
 extern crate tokio_timer;
-extern crate futures_cpupool;
 use fringe::OsStack;
 use fringe::generator::{Generator, Yielder};
 use futures::{Future, Poll, Async};
@@ -9,14 +8,13 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use tokio_timer::*;
 use std::time::Duration;
-use futures_cpupool::CpuPool;
 
 struct FringeFut<T: Send, E: Send> {
     gen: Generator<(), Async<Result<T, E>>, OsStack>,
 }
 
 struct SchedThunk<'a, T: Send + 'a, E: Send + 'a>(&'a Yielder<(), Async<Result<T, E>>>);
-const STACKSZ  : usize = 1<<20;
+const STACKSZ: usize = 1 << 20;
 
 // impl<'a, Input, Output, Stack> Generator<'a, Input, Output, Stack> where Input: 'a, Output: 'a, Stack: Stack
 // fn resume(&mut self, input: Input) -> Option<Output>
@@ -64,8 +62,6 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
 }
 
 fn main() {
-    let pool = CpuPool::new(4);
-
     let timer = Timer::default();
 
     // Execute some work on the thread pool, optionally closing over data.
