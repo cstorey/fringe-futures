@@ -61,25 +61,46 @@ impl<T: Send, E: Send> Future for FringeFut<T, E> {
 #[cfg(test)]
 mod test {
     extern crate tokio_timer;
-    use self::tokio_timer::Timer;
     use std::time::Duration;
+    use std::mem;
     use super::FringeFut;
-    use futures::Future;
+    use futures::{Future, Poll, Async, task};
+    #[derive(Debug)]
+    enum CanaryFuture {
+        Ready(usize),
+        Go(usize),
+        Done,
+    }
+
+    impl Future for CanaryFuture {
+        type Item = usize;
+        type Error = ();
+        fn poll(&mut self) -> Poll<usize, ()> {
+            println!("CanaryFuture#poll:{:?}", self);
+            match mem::replace(self, CanaryFuture::Done) {
+                CanaryFuture::Ready(n) => {
+                    *self = CanaryFuture::Go(n);
+                    task::park().unpark();
+                    Ok(Async::NotReady)
+                }
+                CanaryFuture::Go(n) => Ok(Async::Ready(n)),
+                CanaryFuture::Done => unreachable!(),
+            }
+        }
+    }
 
     #[test]
     fn smoketest() {
-        let timer = Timer::default();
-
         let f = FringeFut::<usize, ()>::new(|yielder| {
             for n in 0..5 {
-                let dur = Duration::from_millis(200);
-                println!("n:{:?}", n);
-                yielder.await(timer.sleep(dur)).expect("await");
+                let r = yielder.await(CanaryFuture::Ready(n)).expect("await");
+                println!("a:{:?}", r);
             }
             Ok(42usize)
         });
 
         println!("Before:{:?}", f);
+        // Helpfully seems to run things inside of a task for us.
         let res = f.wait();
         println!("res:{:?}", res);
     }
