@@ -1,12 +1,16 @@
 [package]
-name = "fringe-futures"
-description = "Experiment in combining libfringe + futures"
-version = "0.1.0"
 authors = ["Ceri Storey <cez@necrofish.org.uk>"]
-license = "MIT"
+description = "Experiment in combining libfringe + futures"
 homepage = "https://github.com/cstorey/fringe-futures"
-
+license = "MIT"
+name = "fringe-futures"
+version = "0.1.0"
 [dependencies]
-fringe = { version = "1.2.1" }
 futures = "0.1.2"
+log = "*"
+
+[dependencies.fringe]
+version = "1.2.1"
+
 [dev-dependencies]
+env_logger = "0.3.5"
