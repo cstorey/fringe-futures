@@ -3,6 +3,8 @@ name = "fringe-futures"
 description = "Experiment in combining libfringe + futures"
 version = "0.1.0"
 authors = ["Ceri Storey <cez@necrofish.org.uk>"]
+license = "MIT"
+homepage = "https://github.com/cstorey/fringe-futures"
 
 [dependencies]
 fringe = { version = "1.2.1" }
